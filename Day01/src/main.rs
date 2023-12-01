@@ -26,6 +26,7 @@ fn part1(contents: String) {
                 break;
             }
         }
+
         let num: u8 = num_as_str.parse().unwrap();
         numbers.push(num);
     }
@@ -81,33 +82,37 @@ fn part2(contents: String) {
             if letter >= '1' && letter <= '9' {
                 num_as_str.push(letter);
                 break;
-            } else if line.chars().rev().collect::<String>()[i..].starts_with("eno") {
-                num_as_str.push('1');
-                break;
-            } else if line.chars().rev().collect::<String>()[i..].starts_with("owt") {
-                num_as_str.push('2');
-                break;
-            } else if line.chars().rev().collect::<String>()[i..].starts_with("eerht") {
-                num_as_str.push('3');
-                break;
-            } else if line.chars().rev().collect::<String>()[i..].starts_with("ruof") {
-                num_as_str.push('4');
-                break;
-            } else if line.chars().rev().collect::<String>()[i..].starts_with("evif") {
-                num_as_str.push('5');
-                break;
-            } else if line.chars().rev().collect::<String>()[i..].starts_with("xis") {
-                num_as_str.push('6');
-                break;
-            } else if line.chars().rev().collect::<String>()[i..].starts_with("neves") {
-                num_as_str.push('7');
-                break;
-            } else if line.chars().rev().collect::<String>()[i..].starts_with("thgie") {
-                num_as_str.push('8');
-                break;
-            } else if line.chars().rev().collect::<String>()[i..].starts_with("enin") {
-                num_as_str.push('9');
-                break;
+            } else {
+                let reversed_line: String = line.chars().rev().collect::<String>();
+
+                if reversed_line[i..].starts_with("eno") {
+                    num_as_str.push('1');
+                    break;
+                } else if reversed_line[i..].starts_with("owt") {
+                    num_as_str.push('2');
+                    break;
+                } else if reversed_line[i..].starts_with("eerht") {
+                    num_as_str.push('3');
+                    break;
+                } else if reversed_line[i..].starts_with("ruof") {
+                    num_as_str.push('4');
+                    break;
+                } else if reversed_line[i..].starts_with("evif") {
+                    num_as_str.push('5');
+                    break;
+                } else if reversed_line[i..].starts_with("xis") {
+                    num_as_str.push('6');
+                    break;
+                } else if reversed_line[i..].starts_with("neves") {
+                    num_as_str.push('7');
+                    break;
+                } else if reversed_line[i..].starts_with("thgie") {
+                    num_as_str.push('8');
+                    break;
+                } else if reversed_line[i..].starts_with("enin") {
+                    num_as_str.push('9');
+                    break;
+                }
             }
         }
 

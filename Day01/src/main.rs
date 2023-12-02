@@ -4,12 +4,12 @@ use std::fs;
 fn main() {
     let contents: String = fs::read_to_string("src/input.txt").expect("Should have been able to read the file");
 
-    part1(contents.clone());
-    part2(contents.clone());
+    println!("part 1: {}", part1(contents.clone()));
+    println!("part 2: {}", part2(contents.clone()));
 }
 
 
-fn part1(contents: String) {
+fn part1(contents: String) -> u32 {
     let mut numbers: Vec<u8> = Vec::new();
     for line in contents.lines() {
         let mut num_as_str: String = String::new();
@@ -36,11 +36,11 @@ fn part1(contents: String) {
         sum += num as u32;
     }
 
-    println!("{}", sum);
+    return sum;
 }
 
 
-fn part2(contents: String) {
+fn part2(contents: String) -> u32 {
     let mut numbers: Vec<u8> = Vec::new();
     for line in contents.lines() {
         let mut num_as_str: String = String::new();
@@ -125,5 +125,23 @@ fn part2(contents: String) {
         sum += num as u32;
     }
 
-    println!("{}", sum);
+    return sum;
+}
+
+
+#[cfg(test)] #[allow(non_snake_case)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part1() {
+        let contents: String = fs::read_to_string("src/test1.txt").expect("Should have been able to read the file");
+        assert_eq!(part1(contents.clone()), 142);
+    }
+
+    #[test]
+    fn test_part2() {
+        let contents: String = fs::read_to_string("src/test2.txt").expect("Should have been able to read the file");
+        assert_eq!(part2(contents.clone()), 281);
+    }
 }

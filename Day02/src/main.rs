@@ -4,12 +4,12 @@ use std::fs;
 fn main() {
     let contents: String = fs::read_to_string("src/input.txt").expect("Should have been able to read the file");
 
-    part1(contents.clone());
-    part2(contents.clone());
+    println!("part 1: {}", part1(contents.clone()));
+    println!("part 2: {}", part2(contents.clone()));
 }
 
 
-fn part1(contents: String) {
+fn part1(contents: String) -> u64 {
     /* 12 red, 13 green, 14 blue */
 
     let mut ans: u64 = 0;
@@ -47,11 +47,11 @@ fn part1(contents: String) {
         }
     }
 
-    println!("{}", ans);
+    return ans;
 }
 
 
-fn part2(contents: String) {
+fn part2(contents: String) -> u64 {
     let mut ans: u64 = 0;
     for line in contents.lines() {
         let line_str: String = line.to_string();
@@ -85,5 +85,23 @@ fn part2(contents: String) {
         ans += red_max*green_max*blue_max;
     }
 
-    println!("{}", ans);
+    return ans;
+}
+
+
+#[cfg(test)] #[allow(non_snake_case)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part1() {
+        let contents: String = fs::read_to_string("src/test1.txt").expect("Should have been able to read the file");
+        assert_eq!(part1(contents.clone()), 8);
+    }
+
+    #[test]
+    fn test_part2() {
+        let contents: String = fs::read_to_string("src/test1.txt").expect("Should have been able to read the file");
+        assert_eq!(part2(contents.clone()), 2286);
+    }
 }

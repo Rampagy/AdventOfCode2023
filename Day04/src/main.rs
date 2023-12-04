@@ -77,31 +77,32 @@ fn part2(contents: String) -> u64 {
             }
         }
 
-        /* TODO: count card copies */
-
         /* track the winning card copies in hashmap */
         let card_copies: u64 = *match_cards.get(&card_num).unwrap_or(&0);
-
         for _ in 0..card_copies+1 {
             if match_count > 0 {
                 for i in card_num+1..card_num+1+(match_count as u64) {
-                    if match_cards.contains_key(&card_num) {
-                        let m: u64 = *match_cards.get(&card_num).unwrap();
+                    if match_cards.contains_key(&i) {
+                        let m: u64 = *match_cards.get(&i).unwrap();
                         match_cards.insert(i, m+1);
-                        println!("updating: {i}:{}", m+1);
                     } else {
                         match_cards.insert(i, 1);
-                        println!("creating: {i}:{}", 1);
                     }
                 }
             }
+        }
+
+        /* add original card into hashmap */
+        if match_cards.contains_key(&card_num) {
+            let m: u64 = *match_cards.get(&card_num).unwrap();
+            match_cards.insert(card_num, m+1);
+        } else {
+            match_cards.insert(card_num, 1);
         }
     }
 
     for (card_num, card_amount) in match_cards {
         ans += card_amount;
-
-        println!("{}: {}", card_num, card_amount);
     }
 
     return ans;

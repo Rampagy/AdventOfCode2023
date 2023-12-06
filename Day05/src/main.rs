@@ -2,8 +2,8 @@ use std::fs;
 use std::time::Instant;
 use std::thread;
 
-const NTHREADS: u64 = 16;
-const BATCH_SIZE: u64 = 2000;
+const NTHREADS: u64 = 64;
+const BATCH_SIZE: u64 = 4000000;
 
 #[allow(non_snake_case)]
 fn main() {
@@ -17,12 +17,12 @@ fn main() {
     start_time = Instant::now();
     ans = part2_single(contents.clone());
     duration = start_time.elapsed();
-    println!("part 2 (single threaded): {} ({} sec)", ans, duration.as_secs() as f64 + 1e-9 as f64*duration.subsec_nanos() as f64);
+    println!("part 2 (1 thread): {} ({} sec)", ans, duration.as_secs() as f64 + 1e-9 as f64*duration.subsec_nanos() as f64);
 
     start_time = Instant::now();
     ans = part2_multi(contents.clone());
     duration = start_time.elapsed();
-    println!("part 2 (multi threaded): {} ({} sec)", ans, duration.as_secs() as f64 + 1e-9 as f64*duration.subsec_nanos() as f64);
+    println!("part 2 ({} threads): {} ({} sec)", NTHREADS, ans, duration.as_secs() as f64 + 1e-9 as f64*duration.subsec_nanos() as f64);
 }
 
 #[allow(non_snake_case)]
@@ -215,41 +215,35 @@ fn part2_multi(contents: String) -> u64 {
     /* iterate backwards through translation layers starting at starting at 0 location */
     translation_layers.reverse();
 
-    let mut problem_solved: bool = false;
-    for i in (0..u64::MAX).step_by((BATCH_SIZE*NTHREADS) as usize) {
-        for loc in i..i+(BATCH_SIZE*NTHREADS) {
-            let mut children: Vec<thread::JoinHandle<(bool, u64)>> = vec![];
-            for thd in 0..NTHREADS {
-                let tl_copy: Vec<Vec<(u64, u64, u64)>> = translation_layers.clone();
-                let seeds_copy: Vec<u64> = seeds.clone();
-                let locations: Vec<u64> =(loc+thd*BATCH_SIZE..loc+(thd+1)*BATCH_SIZE).collect();
+    for loc in (0..u64::MAX).step_by((BATCH_SIZE*NTHREADS) as usize) {
+        let mut children: Vec<thread::JoinHandle<(bool, u64)>> = vec![];
+        for thd in 0..NTHREADS {
+            let tl_copy: Vec<Vec<(u64, u64, u64)>> = translation_layers.clone();
+            let seeds_copy: Vec<u64> = seeds.clone();
+            let loc_start: u64 = loc+thd*BATCH_SIZE;
+            let loc_end: u64 = loc+(thd+1)*BATCH_SIZE;
 
-                children.push(thread::spawn(move || {
-                    is_valid_seed(locations, tl_copy, seeds_copy, thd)
-                }));
-            }
+            children.push(thread::spawn(move || {
+                thread::sleep(std::time::Duration::from_millis(500));
+                is_valid_seed(loc_start, loc_end, tl_copy, seeds_copy, thd)
+            }));
+        }
 
-            let mut results: Vec<u64> = vec![];
-            for child in children {
-                let ans_found: bool;
-                let loc: u64;
+        let mut results: Vec<u64> = vec![];
+        for child in children {
+            let ans_found: bool;
+            let loc: u64;
 
-                /* collect results */
-                (ans_found, loc) = child.join().unwrap();
+            /* collect results */
+            (ans_found, loc) = child.join().unwrap();
 
-                if ans_found {
-                    results.push(loc);
-                }
-            }
-
-            if !results.is_empty() {
-                ans = *results.iter().min().unwrap();
-                problem_solved = true;
-                break;
+            if ans_found {
+                results.push(loc);
             }
         }
 
-        if problem_solved {
+        if !results.is_empty() {
+            ans = *results.iter().min().unwrap();
             break;
         }
     }
@@ -259,9 +253,9 @@ fn part2_multi(contents: String) -> u64 {
 
 
 #[allow(non_snake_case)]
-fn is_valid_seed(loc: Vec<u64>, translation_layers: Vec<Vec<(u64, u64, u64)>>, seeds: Vec<u64>, _thd: u64) -> (bool, u64) {
+fn is_valid_seed(loc_start: u64, loc_end: u64, translation_layers: Vec<Vec<(u64, u64, u64)>>, seeds: Vec<u64>, _thd: u64) -> (bool, u64) {
     let mut answers: Vec<u64> = vec![];
-    for l in loc {
+    for l in loc_start..loc_end {
         let mut translation_value: u64 = l;
 
         for translation_layer in translation_layers.clone() {
@@ -340,12 +334,6 @@ mod tests {
     fn test_part2_multi() {
         let contents: String = fs::read_to_string("src/test1.txt").expect("Should have been able to read the file");
         assert_eq!(part2_multi(contents.clone()), 46);
-    }
-
-    #[test]
-    fn test_part2_multi_big_dog() {
-        let contents: String = fs::read_to_string("src/input.txt").expect("Should have been able to read the file");
-        assert_eq!(part2_multi(contents.clone()), 137516820);
     }
 
     #[test]

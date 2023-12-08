@@ -2,6 +2,7 @@ use std::fs;
 use std::collections::HashMap;
 use std::cmp::Ordering;
 
+const JOKER_NUM: u8 = 49;
 
 #[allow(non_snake_case)]
 fn main() {
@@ -9,6 +10,101 @@ fn main() {
 
     println!("part 1: {}", part1(contents.clone()));
     println!("part 2: {}", part2(contents.clone()));
+}
+
+
+fn calculate_winner_jokers(mine: &[u8; 5], other: &[u8; 5]) -> Ordering {
+    let mut mine_card_count: HashMap<u8, u64> = HashMap::new();
+    let mut other_card_count: HashMap<u8, u64> = HashMap::new();
+
+    /* count cards */
+    let mut mine_joker_count: u8 = 0;
+    for card in mine.clone() {
+        if card != JOKER_NUM {
+            if mine_card_count.contains_key(&card) {
+                mine_card_count.insert(card, mine_card_count.get(&card).unwrap() + 1);
+            } else {
+                mine_card_count.insert(card, 1);
+            }
+        } else {
+            mine_joker_count += 1;
+        }
+    }
+
+    let mut other_joker_count: u8 = 0;
+    for card in other.clone() {
+        if card != JOKER_NUM {
+            if other_card_count.contains_key(&card) {
+                other_card_count.insert(card, other_card_count.get(&card).unwrap() + 1);
+            } else {
+                other_card_count.insert(card, 1);
+            }
+        } else {
+            other_joker_count += 1;
+        }
+    }
+
+    /* create a vector of card occurances and sort */
+    let mut mine_occurances: Vec<u64> = mine_card_count.values().cloned().collect();
+    let mut other_occurances: Vec<u64> = other_card_count.values().cloned().collect();
+
+    mine_occurances.sort_by(|a: &u64, b: &u64| b.cmp(a));
+    other_occurances.sort_by(|a: &u64, b: &u64| b.cmp(a));
+
+    /* add the joker count to the highest count */
+    if mine_occurances.len() > 0 {
+        mine_occurances[0] = mine_occurances[0] + mine_joker_count as u64;
+    } else {
+        mine_occurances.push(mine_joker_count as u64);
+    }
+    if other_occurances.len() > 0 {
+        other_occurances[0] = other_occurances[0] + other_joker_count as u64;
+    } else {
+        other_occurances.push(other_joker_count as u64);
+    }
+
+
+    if mine_occurances[0] > other_occurances[0] {
+        /* mine has more occurances of same card */
+        return Ordering::Greater;
+    } else if mine_occurances[0] < other_occurances[0] {
+        /* other has more occurances of same card */
+        return Ordering::Less;
+    } else {
+        /* same number of card occurances */
+        if mine_occurances[0] == 3 && other_occurances[0] == 3 && 
+                mine_occurances[1] == 2 && other_occurances[1] < 2 {
+            /* mine is full house and other is not */
+            return Ordering::Greater;
+        } else if mine_occurances[0] == 3 && other_occurances[0] == 3 && 
+                mine_occurances[1] < 2 && other_occurances[1] == 2 {
+            /* other is full house and mine is not */
+            return Ordering::Less;
+        } else {
+            if mine_occurances[0] == 2 && other_occurances[0] == 2 && 
+                    mine_occurances[1] == 2 && other_occurances[1] < 2 {
+                /* mine is two pair and other is not */
+                return Ordering::Greater;
+            } else if mine_occurances[0] == 2 && other_occurances[0] == 2 && 
+                    mine_occurances[1] < 2 && other_occurances[1] == 2 {
+                /* other is two pair and mine is not */
+                return Ordering::Less;
+            } else if mine_occurances[0] == 1 && other_occurances[0] == 1 {
+                /* continue to tie breaker logic */
+            }
+        }
+    }
+
+    /* tie - go through each letter and until one of them is bigger */
+    for i in 0..mine.len() {
+        if mine[i] > other[i] {
+            return Ordering::Greater;
+        } else if mine[i] < other[i] {
+            return Ordering::Less;
+        } else { /* check next letter */ }
+    }
+
+    return Ordering::Equal;
 }
 
 
@@ -32,7 +128,6 @@ fn calculate_winner(mine: &[u8; 5], other: &[u8; 5]) -> Ordering {
             other_card_count.insert(card, 1);
         }
     }
-
 
     /* create a vector of card occurances and sort */
     let mut mine_occurances: Vec<u64> = mine_card_count.values().cloned().collect();
@@ -67,14 +162,7 @@ fn calculate_winner(mine: &[u8; 5], other: &[u8; 5]) -> Ordering {
                 /* other is two pair and mine is not */
                 return Ordering::Less;
             } else if mine_occurances[0] == 1 && other_occurances[0] == 1 {
-                /* all distinct cards */
-                if mine.iter().max() > other.iter().max() {
-                    /* mine has high card */
-                    return Ordering::Greater
-                } else if mine.iter().max() < other.iter().max() {
-                    /* other has high card */
-                    return Ordering::Less
-                } else { /* continue to tie breaker logic */ }
+                /* continue to tie breaker logic */
             }
         }
     }
@@ -131,19 +219,56 @@ fn part1(contents: String) -> u128 {
     cards.sort_by(calculate_winner);
 
     for i in 0..cards.len() {
-        let card_val: u128 = *card_bids.get(&cards[i]).unwrap() as u128;
+        let card_val: u128 = *card_bids.get(&cards[i]).unwrap_or(&0) as u128;
         ans += (i as u128+1)*card_val;
     }
 
-    // 250927134
     return ans;
 }
 
 
 #[warn(non_snake_case)]
-fn part2(contents: String) -> u64 {
-    let mut ans: u64 = 1;
+fn part2(contents: String) -> u128 {
+    let mut ans: u128 = 0;
+    let mut cards: [[u8; 5]; 1000] = [[0; 5]; 1000];
+    let mut card_bids: HashMap<[u8; 5], u16> = HashMap::new();
 
+    let card_strength: HashMap<char, u8> = HashMap::from([
+        ('A',  69),
+        ('K',  68),
+        ('Q',  67),
+        ('J',  JOKER_NUM),
+        ('T',  58),
+        ('9',  57),
+        ('8',  56),
+        ('7',  55),
+        ('6',  54),
+        ('5',  53),
+        ('4',  52),
+        ('3',  51),
+        ('2',  50)
+    ]);
+
+    for (line_num, line) in contents.lines().enumerate() {
+        for (i, val) in line.split_ascii_whitespace().enumerate() {
+            if i == 0 {
+                for (i, ch) in val.chars().enumerate() {
+                    cards[line_num][i] = *card_strength.get(&ch).unwrap();
+                }
+            } else if i == 1 {
+                if card_bids.insert(cards[line_num], val.parse::<u16>().unwrap()) != None {
+                    println!("PANIC");
+                }
+            } else { /* shouldn't get here */ }
+        }
+    }
+
+    cards.sort_by(calculate_winner_jokers);
+
+    for i in 0..cards.len() {
+        let card_val: u128 = *card_bids.get(&cards[i]).unwrap_or(&0) as u128;
+        ans += (i as u128+1)*card_val;
+    }
 
     return ans;
 }
@@ -157,6 +282,13 @@ mod tests {
     fn test_part1() {
         let contents: String = fs::read_to_string("src/test1.txt").expect("Should have been able to read the file");
         assert_eq!(part1(contents.clone()), 6440);
+    }
+
+    #[test]
+    fn test_calculate_winner_jokers() {
+        assert_eq!(calculate_winner_jokers(&[JOKER_NUM, JOKER_NUM, 68, 68, 67], &[JOKER_NUM, 68, 68, 68, 67]), Ordering::Less);
+        assert_eq!(calculate_winner_jokers(&[JOKER_NUM, 67, 68, 68, 67], &[67, 67, 68, 68, 67]), Ordering::Less);
+        assert_eq!(calculate_winner_jokers(&[JOKER_NUM, 50, 68, 68, 50], &[50, 50, 68, 68, 50]), Ordering::Less);
     }
 
     #[test]
@@ -217,6 +349,6 @@ mod tests {
     #[test]
     fn test_part2() {
         let contents: String = fs::read_to_string("src/test1.txt").expect("Should have been able to read the file");
-        assert_eq!(part2(contents.clone()), 71503);
+        assert_eq!(part2(contents.clone()), 5905);
     }
 }

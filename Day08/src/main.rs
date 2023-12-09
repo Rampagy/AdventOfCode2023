@@ -1,6 +1,5 @@
 use std::fs;
-use std::collections::{HashSet, HashMap};
-use std::str::Chars;
+use std::collections::HashMap;
 
 
 #[allow(non_snake_case)]
@@ -60,12 +59,11 @@ fn part1(contents: String) -> u128 {
 
 #[warn(non_snake_case)]
 fn part2(contents: String) -> u128 {
-    let mut ans: u128 = 0;
+        let mut ans: u128 = 0;
     let mut lines: std::str::Lines<'_>  = contents.lines();
     let directions: &str = lines.nth(0).unwrap();
     let mut graph: HashMap<String, (String, String)> = HashMap::new();
     let mut current_nodes: Vec<String> = Vec::new();
-    let mut end_nodes: HashSet<String> = HashSet::new();
 
     /* skip the first one as that is the directions */
     for (i, line) in lines.enumerate() {
@@ -79,52 +77,52 @@ fn part2(contents: String) -> u128 {
             if source.ends_with("A") {
                 current_nodes.push(source.to_string());
             }
+        }
+    }
 
-            if source.ends_with("Z") {
-                end_nodes.insert(source.to_string());
+    let mut start_multiples: Vec<u64> = Vec::new();
+    for current_node in current_nodes {
+        let mut current_node_copy: String = current_node.clone();
+        let mut loop_count: u64 = 1;
+        let mut dir_idx: usize = 0;
+        loop {
+            let a: &(String, String) = graph.get(&current_node_copy).unwrap();
+            let ldest: String = a.0.clone();
+            let rdest: String = a.1.clone();
+
+            let dir: char = directions.chars().nth(dir_idx).unwrap();
+            current_node_copy = if dir == 'L' {
+                                    ldest
+                                } else /* if  dir == 'R' */ {
+                                    rdest
+                                };
+
+            if current_node_copy.ends_with("Z") {
+                start_multiples.push(loop_count);
+                break;
+            } else {
+                loop_count += 1;
+                dir_idx = (dir_idx + 1) % directions.len();
             }
         }
     }
 
-    let mut loop_count: u128 = 1;
-    let mut dir_idx: usize = 0;
+    let multiple_step: u64 = *start_multiples.iter().max().unwrap();
+    let mut accumulator: u64 = multiple_step;
     loop {
-        let dir: char = directions.chars().nth(dir_idx).unwrap();
-        let mut temp_current_node: Vec<String> = Vec::new();
-        let mut winner: bool = true;
-
-        for current_node in &current_nodes {
-            let x: Chars<'_> = current_node.chars();
-            let a: &(String, String) = graph.get(&x.as_str().to_string()).unwrap();
-            let ldest: String = a.0.clone();
-            let rdest: String = a.1.clone();
-
-            let mut new_node: String = "".to_string();
-            if dir == 'L' {
-                new_node = ldest;
-            } else if  dir == 'R' {
-                new_node = rdest;
-            }
-
-            temp_current_node.push(new_node);
-        }
-
-        current_nodes = temp_current_node;
-
-        
-        for current_node in &current_nodes {
-            if !end_nodes.contains(current_node) {
-                winner = false;
+        let mut ans_found: bool = true;
+        for multiple in start_multiples.clone() {
+            if accumulator % multiple != 0 {
+                ans_found = false;
                 break;
             }
         }
 
-        if winner {
-            ans = loop_count;
+        if ans_found {
+            ans = accumulator as u128;
             break;
         } else {
-            loop_count += 1;
-            dir_idx = (dir_idx + 1) % directions.len();
+            accumulator += multiple_step;
         }
     }
 

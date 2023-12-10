@@ -17,17 +17,18 @@ fn main() {
 
 
 #[allow(non_snake_case)]
-pub fn search_map(weighted_map: &Vec<Vec<u8>>, start: Position) -> Vec<Position> {
+pub fn search_map(weighted_map: &Vec<Vec<u8>>, start: Position) -> HashSet<Position, PositionBuildHasher> {
     let mapWidth: usize = weighted_map[0].len();
     let mapHeight: usize = weighted_map.len();
 
+    let mut close_set: HashSet<Position, PositionBuildHasher> = HashSet::with_capacity_and_hasher(mapHeight * mapWidth, PositionBuildHasher);
+
     let mut path: Vec<Position> = Vec::with_capacity(1);
     if start.x < 0 || start.y < 0 || mapWidth < 2 || mapHeight < 2 {
-        return path;
+        return close_set;
     }
 
     /* Memory allocation */
-    let mut close_set: HashSet<Position, PositionBuildHasher> = HashSet::with_capacity_and_hasher(mapHeight * mapWidth, PositionBuildHasher);
     let mut came_from: HashMap<Position, Position, PositionBuildHasher> = HashMap::with_capacity_and_hasher(mapHeight * mapWidth, PositionBuildHasher);
     let mut gscore: HashMap<Position, f32, PositionBuildHasher> = HashMap::with_capacity_and_hasher(mapHeight * mapWidth, PositionBuildHasher);
     let mut oheap: PriorityQueue<Position, OrderedFloat<f32>, PositionBuildHasher> = PriorityQueue::with_capacity_and_hasher(mapWidth + mapHeight, PositionBuildHasher);
@@ -114,16 +115,7 @@ pub fn search_map(weighted_map: &Vec<Vec<u8>>, start: Position) -> Vec<Position>
         }
     }
 
-    /* trace path back from the goal */
-    current = goal;
-    while current != start {
-        path.push(current);
-        current = *came_from.get(&current).unwrap_or(&Position::new(0,0));
-    }
-
-    path.reverse();
-
-    return path;
+    return close_set;
 }
 
 
@@ -211,9 +203,9 @@ fn part1(contents: String, start_pipe: u8) -> u64 {
 
     
     pipe_map[start.y as usize][start.x as usize] = start_pipe;
-    let path: Vec<Position> = search_map(&pipe_map, start);
+    let path: HashSet<Position, PositionBuildHasher> = search_map(&pipe_map, start);
 
-    ans = path.len() as u64;
+    ans = path.len() as u64 / 2;
 
     return ans;
 }
@@ -222,7 +214,61 @@ fn part1(contents: String, start_pipe: u8) -> u64 {
 #[warn(non_snake_case)]
 fn part2(contents: String, start_pipe: u8) -> u64 {
     let mut ans: u64 = 0;
+    let mut pipe_map: Vec<Vec<u8>> = Vec::new();
+    let mut start: Position = Position::new(0, 0);
 
+    for (line_num, line) in contents.lines().enumerate() {
+        let mut row: Vec<u8> = Vec::new();
+        for (col, ch) in line.chars().enumerate() {
+            if ch == 'S' {
+                start.x = col as i32;
+                start.y = line_num as i32;
+
+                // replace S with a proper pipe before searching the map
+                row.push(start_pipe);
+            } else {
+                row.push(ch as u8);
+            }
+        }
+
+        pipe_map.push(row);
+    }
+
+    pipe_map[start.y as usize][start.x as usize] = start_pipe;
+    let path: HashSet<Position, PositionBuildHasher> = search_map(&pipe_map, start);
+
+    /* Shamelessly stole this solution from here:
+     *    https://www.reddit.com/r/adventofcode/comments/18evyu9/2023_day_10_solutions/kcqtow6/ */
+    let mut y: i32 = 0;
+    for row in pipe_map.clone() {
+        let mut x :i32 = 0;
+        for ch in row {
+            if !path.contains(&Position::new(x, y)) { // don't search spots that are part of the path
+                // loop diagonally counting how many times the path is crossed
+                let mut paths_cross: u64 = 0;
+                let mut x_mod: i32 = x - 1;
+                let mut y_mod: i32 = y + 1;
+                while x_mod >= 0 && y_mod < pipe_map[0].len() as i32 {
+                    if path.contains(&Position::new(x_mod, y_mod)) && 
+                            pipe_map[y_mod as usize][x_mod as usize] != 70 && pipe_map[y_mod as usize][x_mod as usize] != 74 {
+                        // count positions in the path that aren't F and J
+                        paths_cross += 1;
+                    }
+
+                    // loop in the southwest direction
+                    x_mod -= 1;
+                    y_mod += 1;
+                }
+
+                if paths_cross % 2 == 1 {
+                    // if the paths crossed an odd number of times then it's in the loop
+                    ans += 1;
+                }
+            }
+            x += 1;
+        }
+        y += 1;
+    }
 
     return ans;
 }

@@ -6,7 +6,7 @@ use std::collections::HashSet;
 fn main() {
     let contents: String = fs::read_to_string("src/input.txt").expect("Should have been able to read the file");
 
-    println!("part 1: {}", part1(contents.clone())); // 6202 - too low
+    println!("part 1: {}", part1(contents.clone())); // 6202 - too low, 7564 - too high
     println!("part 2: {}", part2(contents.clone()));
 }
 
@@ -54,6 +54,17 @@ fn find_matches(spring_field: &str, num_groupings: usize, starting_idx: usize,
                 /* get the new string slice */
                 let new_spring_field: &str = &spring_field[(grouping_end_location + 1)..spring_field.len()];
 
+                /* iterate past the # as they MUST be used */
+                for i in starting_idx..(starting_idx+grouping_end_location+1) {
+                    if spring_field.chars().nth(i-starting_idx).unwrap_or('.') == '#' {
+                        if new_state[new_state.len()-1] > i /*|| i > starting_idx+grouping_end_location*/ {
+                            /* there is an unused '#' in the previous characters */
+                            /* that means this is an invalid branch - return found_states */
+                            return found_states;
+                        }
+                    }
+                }
+
                 /* now search the new spring field */
                 found_states = find_matches(new_spring_field, num_groupings, starting_idx+(grouping_end_location + 1), 
                                             new_grouping_sizes.clone(), new_state.clone(), found_states);
@@ -63,7 +74,10 @@ fn find_matches(spring_field: &str, num_groupings: usize, starting_idx: usize,
                     if spring_field.chars().nth(i).unwrap_or('.') == '#' {
                         // not clear to the end and we're out of groupings, invalid branch
                         /* invalid state- return found_states unchanged */
-                        return found_states;
+                        //return found_states;
+                        /* TODO: this is the case that's broken */
+                        spring_field_count += 1;
+                        continue;
                     }
                 }
 
@@ -71,7 +85,7 @@ fn find_matches(spring_field: &str, num_groupings: usize, starting_idx: usize,
                 /* do a quick check to make sure the current state length is right though first */
                 if num_groupings == new_state.len()  && !found_states.contains(&new_state){
                     found_states.insert(new_state.clone());
-                    break;
+                    //break;
                 } else {
                     /* there are no groupings left to search, and somehow we don't have the correct amount in the state */
                     /* invalid state - return found_states unchanged */
@@ -80,7 +94,7 @@ fn find_matches(spring_field: &str, num_groupings: usize, starting_idx: usize,
             }
         }
 
-        spring_field_count += 1
+        spring_field_count += 1;
     }
 
     return found_states;
@@ -155,6 +169,22 @@ mod tests {
         let mut found_states: HashSet<Vec<usize>> = HashSet::new();
         found_states = find_matches(".???#??.?##?#???", 3, 0, grouping_sizes, vec![], found_states);
         assert_eq!(found_states.len(), 6);
+    }
+
+    #[test]
+    fn part1_test4() {
+        let grouping_sizes: Vec<usize> = vec![3, 2, 1];
+        let mut found_states: HashSet<Vec<usize>> = HashSet::new();
+        found_states = find_matches("?###????????", 3, 0, grouping_sizes, vec![], found_states);
+        assert_eq!(found_states.len(), 10);
+    }
+
+    #[test]
+    fn part1_test5() {
+        let grouping_sizes: Vec<usize> = vec![2, 1, 1, 1];
+        let mut found_states: HashSet<Vec<usize>> = HashSet::new();
+        found_states = find_matches("?????#????#?", 4, 0, grouping_sizes, vec![], found_states);
+        assert_eq!(found_states.len(), 10);
     }
 
     #[test]

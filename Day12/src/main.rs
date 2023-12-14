@@ -50,25 +50,29 @@ fn find_matches(spring_field: &str, num_groupings: usize, starting_idx: usize,
             new_state.push(spring_field_count+starting_idx);
             new_grouping_sizes.remove(0);
 
+            /* iterate through the part of the string that is being sliced off to make sure no # are being sliced
+             off without being used */
+            for i in starting_idx..(starting_idx+grouping_end_location+1) {
+                if spring_field.chars().nth(i-starting_idx).unwrap_or('.') == '#' {
+                    if new_state[new_state.len()-1] > i /*|| i > starting_idx+grouping_end_location*/ {
+                        /* there is an unused '#' in the previous characters */
+                        /* that means this is an invalid branch - return found_states */
+                        return found_states;
+                    }
+                }
+            }
+
             if new_grouping_sizes.len() > 0 {
                 /* get the new string slice */
                 let new_spring_field: &str = &spring_field[(grouping_end_location + 1)..spring_field.len()];
 
-                /* iterate past the # as they MUST be used */
-                for i in starting_idx..(starting_idx+grouping_end_location+1) {
-                    if spring_field.chars().nth(i-starting_idx).unwrap_or('.') == '#' {
-                        if new_state[new_state.len()-1] > i /*|| i > starting_idx+grouping_end_location*/ {
-                            /* there is an unused '#' in the previous characters */
-                            /* that means this is an invalid branch - return found_states */
-                            return found_states;
-                        }
-                    }
-                }
+
 
                 /* now search the new spring field */
                 found_states = find_matches(new_spring_field, num_groupings, starting_idx+(grouping_end_location + 1), 
                                             new_grouping_sizes.clone(), new_state.clone(), found_states);
             } else {
+                let mut missed_hashtag_at_end: bool = false;
                 /* that was the last grouping - loop through to the end and make sure it's all dots */
                 for i in grouping_end_location..spring_field.len() {
                     if spring_field.chars().nth(i).unwrap_or('.') == '#' {
@@ -76,14 +80,15 @@ fn find_matches(spring_field: &str, num_groupings: usize, starting_idx: usize,
                         /* invalid state- return found_states unchanged */
                         //return found_states;
                         /* TODO: this is the case that's broken */
-                        spring_field_count += 1;
-                        continue;
+                        //spring_field_count += 1;
+                        missed_hashtag_at_end = true;
+                        break;
                     }
                 }
 
                 /* it's all clear to the end... add to found states and return it */
                 /* do a quick check to make sure the current state length is right though first */
-                if num_groupings == new_state.len()  && !found_states.contains(&new_state){
+                if num_groupings == new_state.len()  && !found_states.contains(&new_state) && !missed_hashtag_at_end {
                     found_states.insert(new_state.clone());
                     //break;
                 } else {
@@ -184,7 +189,9 @@ mod tests {
         let grouping_sizes: Vec<usize> = vec![2, 1, 1, 1];
         let mut found_states: HashSet<Vec<usize>> = HashSet::new();
         found_states = find_matches("?????#????#?", 4, 0, grouping_sizes, vec![], found_states);
-        assert_eq!(found_states.len(), 10);
+        
+        /* must all have a 5 & 10 */
+        assert_eq!(found_states.len(), 7);
     }
 
     #[test]

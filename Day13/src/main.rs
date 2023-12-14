@@ -82,7 +82,6 @@ fn get_reflection(graph: &str, solution: (bool, bool, usize)) -> (bool, bool, us
     return (found_solution, reflection_was_horizontal, reflection_index);
 }
 
-
 #[allow(non_snake_case)] #[allow(non_camel_case_types)]
 fn part1(contents: String) -> usize {
     let mut ans: usize = 0;
@@ -143,6 +142,8 @@ fn part2(contents: String) -> usize {
             let row_of_flip: usize = char_flip_idx / graph.lines().nth(0).unwrap().len();
             let col_of_flip: usize = char_flip_idx % graph.lines().count();
 
+            /* convert graph to vector of vectors so I can get rid of this abomination
+               and go directly to the row/col I want to flip*/
             let mut modified_graph: String = "".to_string();
             for (row, line) in graph.lines().enumerate() {
                 if row == row_of_flip {

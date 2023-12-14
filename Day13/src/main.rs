@@ -8,7 +8,7 @@ fn main() {
     let contents: String = fs::read_to_string("src/input.txt").expect("Should have been able to read the file");
 
     println!("part 1: {}", part1(contents.clone()));
-    println!("part 2: {}", part2(contents.clone()));
+    println!("part 2: {}", part2(contents.clone())); // 17743 - too low, 
 }
 
 
@@ -136,9 +136,10 @@ fn part2(contents: String) -> usize {
     for graph in graphs {
         let original: (bool, bool, usize) = get_reflection(graph, (false, false, 0));
 
-        let mut new_reflection: (bool, bool, usize);
+        let mut new_reflection: (bool, bool, usize) = (false, false, 0);
         let mut char_flip_idx: usize = 0;
-        loop {
+        let graph_size: usize = graph.lines().count() * graph.lines().nth(0).unwrap().len();
+        while char_flip_idx < graph_size {
             let row_of_flip: usize = char_flip_idx / graph.lines().nth(0).unwrap().len();
             let col_of_flip: usize = char_flip_idx % graph.lines().count();
 
@@ -184,7 +185,7 @@ fn part2(contents: String) -> usize {
             char_flip_idx += 1;
         }
 
-        println!("{}", graph_count);
+        println!("{} {}", graph_count,  new_reflection.0);
         graph_count += 1;
     }
 

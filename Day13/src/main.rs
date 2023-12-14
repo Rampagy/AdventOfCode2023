@@ -133,6 +133,7 @@ fn part2(contents: String) -> usize {
     /* this split will only work in windows... */
     let graphs: Vec<&str> = contents.split("\r\n\r\n").collect();
 
+    let mut graph_count: usize = 0;
     for graph in graphs {
         let original: (bool, bool, usize) = get_reflection(graph, (false, false, 0));
 
@@ -181,6 +182,9 @@ fn part2(contents: String) -> usize {
 
             char_flip_idx += 1;
         }
+
+        println!("{}", graph_count);
+        graph_count += 1;
     }
 
     return ans;

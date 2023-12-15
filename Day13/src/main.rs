@@ -8,7 +8,7 @@ fn main() {
     let contents: String = fs::read_to_string("src/input.txt").expect("Should have been able to read the file");
 
     println!("part 1: {}", part1(contents.clone()));
-    println!("part 2: {}", part2(contents.clone())); // 17743 - too low, 
+    println!("part 2: {}", part2(contents.clone())); // 17743 - too low, 18395 - too low,
 }
 
 
@@ -42,7 +42,15 @@ fn get_reflection(graph: &str, solution: (bool, bool, usize)) -> (bool, bool, us
     let mut reflection_was_horizontal: bool = true;
     let mut found_solution: bool = false;
 
-    let reflections: HashSet<usize> = find_horizontal_reflections(graph);
+    let mut reflections: HashSet<usize> = find_horizontal_reflections(graph);
+
+    /* it may return more than 1 solution, so need to remove the original solution */
+    if reflections.len() == 2 && solution.0 && solution.1 {
+        /* need to remove the original */
+        if reflections.contains(&solution.2) {
+            reflections.remove(&solution.2);
+        }
+    }
 
     if reflections.len() == 1 && (!solution.0 || (solution.0 && (*reflections.iter().nth(0).unwrap() != solution.2 || !solution.1))) {
         reflection_index += reflections.iter().nth(0).unwrap();
@@ -71,7 +79,16 @@ fn get_reflection(graph: &str, solution: (bool, bool, usize)) -> (bool, bool, us
             mirrored_graph = format!("{}\n", mirrored_graph);
         }
 
-        let reflections1: HashSet<usize> = find_horizontal_reflections(mirrored_graph.as_str());
+        let mut reflections1: HashSet<usize> = find_horizontal_reflections(mirrored_graph.as_str());
+
+        /* it may return more than 1 solution, so need to remove the original solution */
+        if reflections1.len() == 2 && solution.0 && !solution.1{
+            /* need to remove the original */
+            if reflections1.contains(&solution.2) {
+                reflections1.remove(&solution.2);
+            }
+        }
+
         if reflections1.len() == 1 && (!solution.0 || (solution.0 && (*reflections1.iter().nth(0).unwrap() != solution.2 || solution.1))) {
             reflection_index += reflections1.iter().nth(0).unwrap();
             reflection_was_horizontal = false;
@@ -82,12 +99,13 @@ fn get_reflection(graph: &str, solution: (bool, bool, usize)) -> (bool, bool, us
     return (found_solution, reflection_was_horizontal, reflection_index);
 }
 
+
 #[allow(non_snake_case)] #[allow(non_camel_case_types)]
 fn part1(contents: String) -> usize {
     let mut ans: usize = 0;
 
     /* this split will only work in windows... */
-    let graphs: Vec<&str> = contents.split("\r\n\r\n").collect();
+    let graphs: Vec<&str> = contents.split("\n\n").collect();
 
     for graph in graphs {
         let reflections: HashSet<usize> = find_horizontal_reflections(graph);
@@ -130,7 +148,7 @@ fn part2(contents: String) -> usize {
     let mut ans: usize = 0;
 
     /* this split will only work in windows... */
-    let graphs: Vec<&str> = contents.split("\r\n\r\n").collect();
+    let graphs: Vec<&str> = contents.split("\n\n").collect();
 
     let mut graph_count: usize = 0;
     for graph in graphs {
@@ -138,10 +156,12 @@ fn part2(contents: String) -> usize {
 
         let mut new_reflection: (bool, bool, usize) = (false, false, 0);
         let mut char_flip_idx: usize = 0;
-        let graph_size: usize = graph.lines().count() * graph.lines().nth(0).unwrap().len();
+        let graph_width: usize = graph.lines().nth(0).unwrap().len();
+        let graph_height: usize = graph.lines().count();
+        let graph_size: usize = graph_width * graph_height;
         while char_flip_idx < graph_size {
-            let row_of_flip: usize = char_flip_idx / graph.lines().nth(0).unwrap().len();
-            let col_of_flip: usize = char_flip_idx % graph.lines().count();
+            let row_of_flip: usize = char_flip_idx / graph_width;
+            let col_of_flip: usize = char_flip_idx % graph_width;
 
             /* convert graph to vector of vectors so I can get rid of this abomination
                and go directly to the row/col I want to flip*/
@@ -185,7 +205,6 @@ fn part2(contents: String) -> usize {
             char_flip_idx += 1;
         }
 
-        println!("{} {}", graph_count,  new_reflection.0);
         graph_count += 1;
     }
 

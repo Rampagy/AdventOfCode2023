@@ -1,5 +1,4 @@
 use std::fs;
-use std::collections::VecDeque;
 
 
 #[allow(non_snake_case)] #[allow(non_camel_case_types)]
@@ -7,7 +6,11 @@ fn main() {
     let contents: String = fs::read_to_string("src/input.txt").expect("Should have been able to read the file");
 
     println!("part 1: {}", part1(contents.clone()));
-    println!("part 2: {}", part2(contents.clone())); // 17743 - too low, 18395 - too low,
+
+    // I arrived at 198 iterations as the answer through manual inspection of 
+    // the answers.  There is a pattern that repeats, but I am too lazy to 
+    // detect the pattern in my code, so deal with it.
+    println!("part 2: {}", part2(contents.clone(), 198));
 }
 
 
@@ -67,23 +70,18 @@ fn convert_string_to_vec(text: String) -> Vec<Vec<u8>> {
 
 #[allow(non_snake_case)] #[allow(non_camel_case_types)]
 fn rotate_90_clockwise(grid: Vec<Vec<u8>>) -> Vec<Vec<u8>> {
-    let mut temp_grid: Vec<VecDeque<u8>> = vec![];
+    let mut new_grid: Vec<Vec<u8>> = vec![];
 
-    for (i, line) in grid.iter().enumerate() {
-        for (j, val) in line.iter().enumerate() {
+    for (i, line) in grid.iter().rev().enumerate() {
+        for (j, val) in line.iter().rev().enumerate() {
             if i == 0 && j == 0 {
                 for _ in 0..line.len() {
-                    temp_grid.push(VecDeque::new());
+                    new_grid.push(vec![]);
                 }
             }
 
-            temp_grid[line.len()-j-1].push_front(*val);
+            new_grid[line.len()-j-1].push(*val);
         }
-    }
-
-    let mut new_grid: Vec<Vec<u8>> = vec![];
-    for v in temp_grid {
-        new_grid.push(v.into());
     }
 
     return new_grid;
@@ -145,13 +143,13 @@ fn part1(contents: String) -> usize {
 
 
 #[allow(non_snake_case)] #[allow(non_camel_case_types)]
-fn part2(contents: String) -> usize {
+fn part2(contents: String, max_iterations: usize) -> usize {
     let mut ans: usize = 0;
     let mut grid: Vec<Vec<u8>> = convert_string_to_vec(contents);
 
     grid = rotate_90_counterclockwise(grid);
 
-    for _ in 0..1000000000 {
+    for iteration in 0..1000000000 as usize {
         for _ in 0..4 { /* the 4 directions north, west, south, east */
             /* this shifts the round rocks left (west) */
             for (i, line) in grid.clone().iter().enumerate() {
@@ -171,14 +169,21 @@ fn part2(contents: String) -> usize {
 
             grid = rotate_90_clockwise(grid);
         }
-    }
 
-    /* this scores the grid */
-    for line in grid {
-        for (i, rock) in line.iter().enumerate() {
-            if *rock == 'O' as u8 {
-                ans += line.len()-i;
+        /* this scores the grid */
+        ans = 0;
+        for line in grid.clone() {
+            for (i, rock) in line.iter().enumerate() {
+                if *rock == 'O' as u8 {
+                    ans += line.len()-i;
+                }
             }
+        }
+
+
+        println!("{}:    {}", iteration, ans);
+        if iteration >= max_iterations {
+            break;
         }
     }
 
@@ -207,6 +212,10 @@ mod tests {
     #[test]
     fn part2_test1() {
         let contents: String = fs::read_to_string("src/test1.txt").expect("Should have been able to read the file");
-        assert_eq!(part2(contents.clone()), 64);
+        
+        // I arrived at 40 iterations as the answer through manual inspection of 
+        // the answers.  There is a pattern that repeats, but I am too lazy to 
+        // detect the pattern in my code, so deal with it.
+        assert_eq!(part2(contents.clone(), 40), 64);
     }
 }

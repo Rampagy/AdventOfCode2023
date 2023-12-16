@@ -68,38 +68,38 @@ fn get_next_location(grid: Vec<Vec<u8>>, r: usize, c: usize, going_dir: u8) -> V
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
         } else if grid[r][c] == '/' as u8 {
             /* goes north */
             new_dir = Orientation::North as u8;
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
         } else if grid[r][c] == '|' as u8 {
             /* splits and goes south/north */
             new_dir = Orientation::North as u8;
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
 
             new_dir = Orientation::South as u8;
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
         } else {
             /* continues in current direction (east) */
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, going_dir);
             if a .len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, going_dir));
             }
-            ret_locs.push((new_r, new_c, going_dir));
         }
     } else if going_dir == Orientation::West as u8 {
         if grid[r][c] == '/' as u8 {
@@ -108,38 +108,38 @@ fn get_next_location(grid: Vec<Vec<u8>>, r: usize, c: usize, going_dir: u8) -> V
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
         } else if grid[r][c] == '\\' as u8 {
             /* goes north */
             new_dir = Orientation::North as u8;
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
         } else if grid[r][c] == '|' as u8 {
             /* splits and goes south/north */
             new_dir = Orientation::North as u8;
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
 
             new_dir = Orientation::South as u8;
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
         } else {
-            /* continues in current direction (east) */
+            /* continues in current direction (west) */
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, going_dir);
             if a .len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, going_dir));
             }
-            ret_locs.push((new_r, new_c, going_dir));
         }
     } else if going_dir == Orientation::North as u8 {
         if grid[r][c] == '\\' as u8 {
@@ -148,38 +148,38 @@ fn get_next_location(grid: Vec<Vec<u8>>, r: usize, c: usize, going_dir: u8) -> V
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
         } else if grid[r][c] == '/' as u8 {
             /* goes east */
             new_dir = Orientation::East as u8;
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
         } else if grid[r][c] == '-' as u8 {
             /* splits and goes west/east */
             new_dir = Orientation::West as u8;
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
 
             new_dir = Orientation::East as u8;
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
         } else {
             /* continues in current direction (north) */
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, going_dir);
             if a .len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, going_dir));
             }
-            ret_locs.push((new_r, new_c, going_dir));
         }
     } else if going_dir == Orientation::South as u8 {
         if grid[r][c] == '\\' as u8 {
@@ -188,49 +188,62 @@ fn get_next_location(grid: Vec<Vec<u8>>, r: usize, c: usize, going_dir: u8) -> V
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
         } else if grid[r][c] == '/' as u8 {
             /* goes west */
             new_dir = Orientation::West as u8;
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
         } else if grid[r][c] == '-' as u8 {
             /* splits and goes west/east */
             new_dir = Orientation::West as u8;
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
 
             new_dir = Orientation::East as u8;
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, new_dir);
             if a.len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, new_dir));
             }
-            ret_locs.push((new_r, new_c, new_dir));
         } else {
             /* continues in current direction (south) */
             let a: Vec<(usize, usize)> = get_next_square_from_orientation(r, c, going_dir);
             if a .len() > 0 {
                 (new_r, new_c) = a[0];
+                ret_locs.push((new_r, new_c, going_dir));
             }
-            ret_locs.push((new_r, new_c, going_dir));
         }
     }
 
     return ret_locs;
 }
 
-fn get_border_vals_and_dir(grid: Vec<Vec<u8>>, grid_width: usize, grid_height: usize) -> Vec<(usize, usize, u8)> {
+fn get_border_vals_and_dir(grid_width: usize, grid_height: usize) -> Vec<(usize, usize, u8)> {
     let mut border_coords: Vec<(usize, usize, u8)> = vec![];
 
-    /* TODO */
-    
+    for i in 0..grid_width {
+        /* top row */
+        border_coords.push((0, i, Orientation::South as u8));
+
+        /* bottom row */
+        border_coords.push((grid_height-1, i, Orientation::North as u8));
+    }
+
+    for i in 0..grid_height {
+        /* left column */
+        border_coords.push((i, 0, Orientation::East as u8));
+
+        /* bottom row */
+        border_coords.push((i, grid_width-1, Orientation::West as u8));
+    }
 
     return border_coords;
 }
@@ -272,14 +285,15 @@ fn part2(contents: String) -> usize {
     let grid: Vec<Vec<u8>> = convert_string_to_vec(contents);
     let grid_width: usize = grid[0].len();
     let grid_height: usize = grid.len();
-    let border_coords: Vec<(usize, usize, u8)> = get_border_vals_and_dir(grid.clone(), grid_width, grid_height);
+    let border_coords: Vec<(usize, usize, u8)> = get_border_vals_and_dir(grid_width, grid_height);
+    //let border_coords: Vec<(usize, usize, u8)> = vec![(0, 1, Orientation::South as u8)];
 
     for (i, j, d) in border_coords {
         let mut open_locations: Vec<(usize, usize, u8)> = vec![];
         let mut visited_locations: HashSet<(usize, usize)> = HashSet::new();
         let mut laser_cache: HashSet<(usize, usize, u8)> = HashSet::new();
 
-        let l: (usize, usize, u8) = (0, 0, d);
+        let l: (usize, usize, u8) = (i, j, d);
         open_locations.push(l);
         laser_cache.insert(l);
 
@@ -296,7 +310,7 @@ fn part2(contents: String) -> usize {
                 }
             }
         }
-    
+
         if visited_locations.len() > ans {
             ans = visited_locations.len();
         }

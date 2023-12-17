@@ -8,6 +8,7 @@ use std::collections::{HashSet, HashMap};
 use priority_queue::PriorityQueue;
 use ordered_float::OrderedFloat;
 use position::{Position, PositionBuildHasher};
+use std::cmp;
 
 
 #[allow(non_snake_case)] #[allow(non_camel_case_types)]
@@ -109,16 +110,23 @@ pub fn optimized_dijkstras_search(  weighted_map: &Vec<Vec<u8>>, start: Position
             illegal_neighbor.y = current.y + trace_back_path[0].y - trace_back_path[1].y;
         }
 
-
         /* Search surrounding neighbors */
         for neighbor in neighbors {
+            let mut gscore_modifier: f32 = 0.0;
+            /* check to see if this neighbor would put it  */
+            if trace_back_path.len() > 1 &&
+                    ((((same_x >= 1 && trace_back_position == Position::new(0, 0)) || (same_x >= 2  && trace_back_position != Position::new(0, 0))) && neighbor.x - current.x == trace_back_path[0].x - trace_back_path[1].x) || 
+                    (((same_y >= 1 && trace_back_position == Position::new(0, 0)) || (same_y >= 2  && trace_back_position != Position::new(0, 0))) && neighbor.y - current.y == trace_back_path[0].y - trace_back_path[1].y)) {
+                gscore_modifier = cmp::max(same_x, same_y) as f32;
+            }
+
             /* if the neighbor is a valid position */
             if neighbor.x >= 0 && neighbor.y >= 0 && 
                     neighbor.y < mapHeight as i32 && neighbor.x < mapWidth as i32 &&
                     weighted_map[neighbor.y as usize][neighbor.x as usize] < 255 && 
                     (!disqualify_illegal_neighbor || neighbor != illegal_neighbor) {
                 let neighbor_gscore: f32 = *gscore.get(&current).unwrap_or(&0.0) + weighted_map[neighbor.y as usize][neighbor.x as usize] as f32 + 
-                                            optimized_heuristic(neighbor, current);
+                                            optimized_heuristic(neighbor, current) + gscore_modifier;
 
                 /* if the neighbor is already on the open list check to see if the neighbor is better before updating it*/
                 let in_open_list: bool = oheap_copy.contains_key(&neighbor);
@@ -183,18 +191,31 @@ fn part1(contents: String) -> usize {
     let map_width: usize = grid[0].len();
 
     /* make start position unwalkable */
-    grid[0][0] = 255;
+    grid[0][0] = 9;
 
     let path: Vec<Position> = optimized_dijkstras_search(&grid, Position::new(0,0), 
                                 Position::new((map_width-1) as i32, (map_height-1) as i32));
 
-    for p in path {
+    for p in path.clone() {
         println!("{}", p);
         ans += grid[p.y as usize][p.x as usize] as usize;
     }
 
+    for p in path {
+        grid[p.y as usize][p.x as usize] = 0;
+    }
+
+    println!("");
+    for i in 0..grid.len() {
+        for j in 0..grid[0].len() {
+            print!("{}", grid[i][j]);
+        }
+        println!("");
+    }
+
     return ans;
 }
+
 
 #[allow(non_snake_case)] #[allow(non_camel_case_types)]
 fn part2(contents: String) -> usize {

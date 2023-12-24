@@ -41,14 +41,14 @@ fn part1(contents: String, test_area_min: usize, test_area_max: usize) -> usize 
             let x_intercept: f64 = (b1*c2 - b2*c1) / (a1*b2 - a2*b1);
             let y_intercept: f64 = (c1*a2 - c2*a1) / (a1*b2 - a2*b1);
 
-            println!("{} {} {} :: {} {} {}", 
-                            trajectories[i][0], trajectories[i][1], trajectories[i][2],
-                            trajectories[j][0], trajectories[j][1], trajectories[j][2]);
-            println!("{} {} {} :: {} {} {}", 
-                            trajectories[i][3], trajectories[i][4], trajectories[i][5],
-                            trajectories[j][3], trajectories[j][4], trajectories[j][5]);
-            println!("{} {}", x_intercept, y_intercept);
-            println!();
+            //println!("{} {} {} :: {} {} {}", 
+            //                trajectories[i][0], trajectories[i][1], trajectories[i][2],
+            //                trajectories[j][0], trajectories[j][1], trajectories[j][2]);
+            //println!("{} {} {} :: {} {} {}", 
+            //                trajectories[i][3], trajectories[i][4], trajectories[i][5],
+            //                trajectories[j][3], trajectories[j][4], trajectories[j][5]);
+            //println!("{} {}", x_intercept, y_intercept);
+            //println!();
 
             if a1*b2 - a2*b1 == 0.0 {
                 /* parallel */
